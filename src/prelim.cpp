@@ -6,7 +6,7 @@
 #include <string>
 
 #include "Image.h"
-#include "Converter.h"
+#include "Utils.h"
 
 int main(int argc, char* argv[]) {
 	std::string fileName(argv[1]);

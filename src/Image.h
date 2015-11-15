@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "Pixel.h"
-#include "Converter.h"
+#include "Utils.h"
 
 class Image {
 public:
