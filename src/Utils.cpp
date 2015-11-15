@@ -1,5 +1,7 @@
 #include "Utils.h"
 
+std::array<std::string, 5> imageTypes = {{ "ppm", "jpg", "png", "bmp" }};
+
 std::string getFileType(std::string fileName) {
 	return fileName.substr(fileName.find('.')+1);
 }
@@ -48,9 +50,12 @@ std::vector<std::string> getImagesFromDirectory(std::string directoryName) {
 
 bool isImage(std::string fileName) {
 	std::string fileType = getFileType(fileName);
-	const char** begin = std::begin(imageTypes);
-	const char** end = std::end(imageTypes);
-	return std::find(begin, end, fileType) != end;
+	for (int i = 0; i < imageTypes.size(); i++) {
+		if (fileType == imageTypes[i]) {
+			return true;
+		}
+	}
+	return false;
 }
 
 bool isPPM(std::string fileName) {

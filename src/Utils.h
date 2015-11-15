@@ -1,6 +1,7 @@
 #ifndef __UTILS_H
 #define __UTILS_H
 
+#include <array>
 #include <dirent.h>
 #include <iostream>
 #include <string>
@@ -8,8 +9,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
-
-static const char* imageTypes[] = {"ppm", "jpg", "png", "bmp"};
 
 std::string getFileType(std::string);
 std::string stripFileExtension(std::string);
