@@ -38,6 +38,12 @@ Image::Image(int height, int width) {
 	}
 }
 
+Image::Image(const Image* that) {
+	this->height = that->height;
+	this->width = that->width;
+	this->pixels = that->pixels;
+}
+
 Image* Image::crop(int height, int width) {
 	Image* newImage = new Image(height, width);
 

@@ -21,6 +21,7 @@ public:
 	Image();
 	Image(std::string);
 	Image(int, int);
+	Image(const Image*);
 	~Image();
 
 	Image* crop(int, int);
