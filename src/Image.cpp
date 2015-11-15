@@ -1,13 +1,11 @@
 #include "image.h"
 
 Image::Image(std::string fileName) {
-	std::string fileType = getFileType(fileName);
-	if (fileType != "ppm") {
+	if (!isPPM(fileName)) {
 		fileName = convertToPPM(fileName);
 	}
 
 	std::ifstream file(fileName);
-
 	std::string line;
 	std::getline(file, line);
 	std::getline(file, line);
