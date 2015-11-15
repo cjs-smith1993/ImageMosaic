@@ -5,7 +5,7 @@ Image::Image(std::string fileName) {
 		fileName = convertToPPM(fileName);
 	}
 
-	std::ifstream file(fileName);
+	std::ifstream file(fileName.c_str());
 	std::string line;
 	std::getline(file, line);
 	std::getline(file, line);
