@@ -3,11 +3,11 @@
 std::array<std::string, 5> imageTypes = {{ "ppm", "jpg", "png", "bmp" }};
 
 std::string getFileType(std::string fileName) {
-	return fileName.substr(fileName.find('.')+1);
+	return fileName.substr(fileName.rfind('.')+1);
 }
 
 std::string stripFileExtension(std::string fileName) {
-	int index = fileName.find('.');
+	int index = fileName.rfind('.');
 	return fileName.substr(0, index);
 }
 
