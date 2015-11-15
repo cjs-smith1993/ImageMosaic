@@ -1,4 +1,4 @@
-#include "image.h"
+#include "Image.h"
 
 Image::Image(std::string fileName) {
 	if (!isPPM(fileName)) {
