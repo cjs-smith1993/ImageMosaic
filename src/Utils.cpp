@@ -14,11 +14,16 @@ std::string getBaseName(std::string fileName) {
 	return fileName.substr(index);
 }
 
-std::vector<std::string> getPPMsFromDirectory(std::string directoryName) {
+std::vector<std::string> getImagesFromDirectory(std::string directoryName) {
 	std::vector<std::string> files;
 
+	char curPath[FILENAME_MAX];
+	getcwd(curPath, sizeof(curPath));
+	std::string fullDirectoryName(curPath + std::string("/") + directoryName);
+
 	DIR* directory;
-	if ((directory = opendir(directoryName.c_str())) == NULL) {
+	if ((directory = opendir(fullDirectoryName.c_str())) == NULL) {
+		std::cout << "Cannot open directory: " << fullDirectoryName << "\n";
 		return files;
 	}
 
@@ -26,19 +31,26 @@ std::vector<std::string> getPPMsFromDirectory(std::string directoryName) {
 	struct dirent* contents;
 	while ((contents = readdir(directory)) != NULL) {
 		struct stat status;
-		sprintf(fileName, "%s/%s", directoryName.c_str(), contents->d_name);
+		sprintf(fileName, "%s%s", fullDirectoryName.c_str(), contents->d_name);
 		if (stat(fileName, &status) == -1) {
 			continue;
 		}
 		if ((status.st_mode & S_IFMT) == S_IFDIR) {
 			continue;
 		}
-		if (isPPM(fileName)) {
+		if (isImage(fileName)) {
 			files.push_back(fileName);
 		}
 	}
 
 	return files;
+}
+
+bool isImage(std::string fileName) {
+	std::string fileType = getFileType(fileName);
+	const char** begin = std::begin(imageTypes);
+	const char** end = std::end(imageTypes);
+	return std::find(begin, end, fileType) != end;
 }
 
 bool isPPM(std::string fileName) {

@@ -12,7 +12,7 @@
 
 int main(int argc, char* argv[]) {
 
-	std::vector<std::string> imageNames = getPPMsFromDirectory(argv[1]);
+	std::vector<std::string> imageNames = getImagesFromDirectory(argv[1]);
 	std::vector<Image*> images;
 	for (int i = 0; i < imageNames.size(); i++) {
 		images.push_back(new Image(imageNames[i]));
