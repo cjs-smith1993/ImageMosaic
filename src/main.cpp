@@ -17,9 +17,7 @@ double getCurrentTime() {
 	return ((double) tp.tv_sec + (double) tp.tv_usec * 1e-6);
 }
 
-
 int main(int argc, char* argv[]) {
-
 	double startTime = getCurrentTime();
 
 	std::vector<std::string> imageNames = getImagesFromDirectory(argv[1]);
