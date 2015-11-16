@@ -1,2 +1,4 @@
 bin/
 *.ppm
+sftp-config.json
+
