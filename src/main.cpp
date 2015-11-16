@@ -46,6 +46,7 @@ int main(int argc, char* argv[]) {
 		minWidth = (curWidth < minWidth) ? curWidth : minWidth;
 	}
 
+	#pragma omp parallel for
 	for (int i = 0; i < images.size(); i++) {
 		images[i] = images[i]->crop(minHeight, minWidth);
 		// std::string oldName(stripFileExtension(getBaseName(imageNames[i])));
