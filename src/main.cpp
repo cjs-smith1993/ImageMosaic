@@ -23,9 +23,11 @@ int main(int argc, char* argv[]) {
 	double startTime = getCurrentTime();
 
 	std::vector<std::string> imageNames = getImagesFromDirectory(argv[1]);
-	std::vector<Image*> images;
+	std::vector<Image*> images(imageNames.size(), NULL);
+
+	#pragma omp parallel for
 	for (int i = 0; i < imageNames.size(); i++) {
-		images.push_back(new Image(imageNames[i]));
+		images[i] = new Image(imageNames[i]);
 	}
 
 	int mosaicHeight, mosaicWidth;
