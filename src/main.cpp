@@ -57,6 +57,11 @@ int main(int argc, char* argv[]) {
 	Image* mosaic = stitch(images, mosaicHeight, mosaicWidth);
 	mosaic->writeToFile("output/mosaic.ppm");
 
+	std::ostringstream oss;
+	oss << minWidth << "x" << minHeight;
+	std::string command("convert output/mosaic.ppm -resize " + oss.str() + " output/mosaic.ppm");
+	system(command.c_str());
+
 	double endTime = getCurrentTime();
 	std::cout << "Execution time (s): " << endTime-startTime << "\n";
 }
