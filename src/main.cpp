@@ -5,12 +5,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <sys/time.h>
 
 #include "Image.h"
 #include "Stitcher.h"
 #include "Utils.h"
 
+double getCurrentTime() {
+	struct timeval tp;
+	gettimeofday(&tp, NULL);
+	return ((double) tp.tv_sec + (double) tp.tv_usec * 1e-6);
+}
+
+
 int main(int argc, char* argv[]) {
+
+	double startTime = getCurrentTime();
 
 	std::vector<std::string> imageNames = getImagesFromDirectory(argv[1]);
 	std::vector<Image*> images;
@@ -45,4 +55,7 @@ int main(int argc, char* argv[]) {
 
 	Image* mosaic = stitch(images, mosaicHeight, mosaicWidth);
 	mosaic->writeToFile("output/mosaic.ppm");
+
+	double endTime = getCurrentTime();
+	std::cout << "Execution time (s): " << endTime-startTime << "\n";
 }
