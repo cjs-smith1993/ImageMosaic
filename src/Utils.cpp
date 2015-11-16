@@ -33,7 +33,7 @@ std::vector<std::string> getImagesFromDirectory(std::string directoryName) {
 	struct dirent* contents;
 	while ((contents = readdir(directory)) != NULL) {
 		struct stat status;
-		sprintf(fileName, "%s%s", fullDirectoryName.c_str(), contents->d_name);
+		sprintf(fileName, "%s/%s", fullDirectoryName.c_str(), contents->d_name);
 		if (stat(fileName, &status) == -1) {
 			continue;
 		}
