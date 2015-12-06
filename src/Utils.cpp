@@ -34,12 +34,17 @@ std::vector<std::string> getImagesFromDirectory(std::string directoryName) {
 	while ((contents = readdir(directory)) != NULL) {
 		struct stat status;
 		sprintf(fileName, "%s/%s", fullDirectoryName.c_str(), contents->d_name);
+		// if an error occured, ignore the file
 		if (stat(fileName, &status) == -1) {
 			continue;
 		}
+		// if file is a directory, ignore the file
 		if ((status.st_mode & S_IFMT) == S_IFDIR) {
+			// S_IFMT are the "file type" bits
+			// S_IFIDR is the "directory" bit configuration
 			continue;
 		}
+		// if file is an image, add it to the list of files
 		if (isImage(fileName)) {
 			files.push_back(fileName);
 		}

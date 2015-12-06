@@ -2,6 +2,7 @@
 
 Image::Image(std::string fileName) {
 	if (!isPPM(fileName)) {
+		std::cout << "Converted " << fileName << " to a ppm\n";
 		fileName = convertToPPM(fileName);
 	}
 
