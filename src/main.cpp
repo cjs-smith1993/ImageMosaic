@@ -5,18 +5,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <sys/time.h>
 
 #include "Image.h"
 #include "Stitcher.h"
 #include "Utils.h"
-
-double getCurrentTime() {
-	struct timeval tp;
-	gettimeofday(&tp, NULL);
-	return ((double) tp.tv_sec + (double) tp.tv_usec * 1e-6);
-}
-
+#include "time.h"
 
 int main(int argc, char* argv[]) {
 
