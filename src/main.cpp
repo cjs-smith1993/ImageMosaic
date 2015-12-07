@@ -67,6 +67,11 @@ int main(int argc, char* argv[]) {
 	std::cout << "Execution time (s): " << endTime-startTime << "\n";
 }
 
+std::string getNameForCell(Image* targetImage, std::vector<std::string> paletteImageNames, int curRow, int curCol, int cellHeight, int cellWidth) {
+	int randomIndex = rand() % paletteImageNames.size();
+	return paletteImageNames[randomIndex];
+}
+
 std::vector<Image*> createPalette(Image* targetImage,
 		std::string paletteImagesDirectory, int nSourceRows, int nSourceCols) {
 
@@ -77,17 +82,18 @@ std::vector<Image*> createPalette(Image* targetImage,
 	int eachWidth = targetImage->width / nSourceCols;
 
 	int numSubCells = nSourceRows * nSourceCols;
-	int paletteSize = paletteImageNames.size();
 	std::vector<Image*> images(numSubCells, NULL);
 	double targetDimsRatio = (eachWidth*1.0)/eachHeight;
 
 	// #pragma omp parallel for
 	for (int i = 0; i < numSubCells; i++) {
-		int randomIndex = rand() % (paletteSize);
-		std::string randomImageName = paletteImageNames[randomIndex];
+		int curRow = i / nSourceRows;
+		int curCol = i % nSourceCols;
+		std::string cellImageName = getNameForCell(targetImage,
+			paletteImageNames, curRow, curCol, eachHeight, eachWidth);
 
 		int imageHeight, imageWidth;
-		getImageDims(randomImageName, &imageHeight, &imageWidth);
+		getImageDims(cellImageName, &imageHeight, &imageWidth);
 
 		double imageDimsRatio = (imageWidth * 1.0)/imageHeight;
 		int resizeWidth = imageWidth;
@@ -106,12 +112,12 @@ std::vector<Image*> createPalette(Image* targetImage,
 			resizeHeight = eachWidth / imageDimsRatio + 1; // the 0.5 is to prevent rounding errors
 		}
 
-		randomImageName = resizeImage(randomImageName, resizeWidth, resizeHeight);
-		getImageDims(randomImageName, &imageHeight, &imageWidth);
-		// std::cout << i << ": " << randomImageName << "(" << imageWidth << "x" << imageHeight << ")\n";
-		Image* tempImage = new Image(randomImageName);
+		cellImageName = resizeImage(cellImageName, resizeWidth, resizeHeight);
+		getImageDims(cellImageName, &imageHeight, &imageWidth);
+		// std::cout << i << ": " << cellImageName << "(" << imageWidth << "x" << imageHeight << ")\n";
+		Image* tempImage = new Image(cellImageName);
 		images.at(i) = tempImage->crop(eachHeight, eachWidth);
-		// std::cout << i << ": " << randomImageName << "(" << images[i]->width << "x" << images[i]->height << ")\n";
+		// std::cout << i << ": " << cellImageName << "(" << images[i]->width << "x" << images[i]->height << ")\n";
 	}
 
 	system(std::string("rm " + paletteImagesDirectory + "/*resize*").c_str());
