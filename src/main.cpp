@@ -11,7 +11,7 @@
 #include "Utils.h"
 #include "time.h"
 
-std::vector<Image*> createPalette(Image*, std::vector<std::string>, int, int);
+std::vector<Image*> createPalette(Image*, std::string, int, int);
 
 /*
 argv[0] -> program name 		("./bin/mosaic")
@@ -48,15 +48,10 @@ int main(int argc, char* argv[]) {
 	double getTargetDimsTime = getCurrentTime();
 	std::cout << "Get target dimensions time (s): " << getTargetDimsTime - getArgsTime << "\n";
 
-	/* GET SOURCE IMAGES FROM DIRECTORY */
-	std::vector<std::string> paletteImageNames = getImagesFromDirectory(srcImagesDir);
-	double getImagesTime = getCurrentTime();
-	std::cout << "Get source images time (s): " << getImagesTime - getTargetDimsTime << "\n";
-
 	/* CREATE PALETTE FROM SOURCE IMAGES */
-	std::vector<Image*> images = createPalette(target, paletteImageNames, nSourceRows, nSourceCols);
+	std::vector<Image*> images = createPalette(target, srcImagesDir, nSourceRows, nSourceCols);
 	double createPaletteTime = getCurrentTime();
-	std::cout << "Create palette time (s): " << createPaletteTime - getImagesTime << "\n";
+	std::cout << "Create palette time (s): " << createPaletteTime - getTargetDimsTime << "\n";
 
 	/* STITCH MOSAIC */
 	Image* mosaic = stitch(target, images, nSourceRows, nSourceCols);
@@ -73,20 +68,26 @@ int main(int argc, char* argv[]) {
 }
 
 std::vector<Image*> createPalette(Image* targetImage,
-		std::vector<std::string> paletteImageNames,
-		int nSourceRows, int nSourceCols) {
+		std::string paletteImagesDirectory, int nSourceRows, int nSourceCols) {
+
+	/* GET PALETTE IMAGES FROM DIRECTORY */
+	std::vector<std::string> paletteImageNames = getImagesFromDirectory(paletteImagesDirectory);
 
 	int eachHeight = targetImage->height / nSourceRows;
 	int eachWidth = targetImage->width / nSourceCols;
 
-	std::vector<Image*> images(paletteImageNames.size(), NULL);
+	int numSubCells = nSourceRows * nSourceCols;
+	int paletteSize = paletteImageNames.size();
+	std::vector<Image*> images(numSubCells, NULL);
 	double targetDimsRatio = (eachWidth*1.0)/eachHeight;
 
-	#pragma omp parallel for
-	for (int i = 0; i < paletteImageNames.size(); i++) {
+	// #pragma omp parallel for
+	for (int i = 0; i < numSubCells; i++) {
+		int randomIndex = rand() % (paletteSize);
+		std::string randomImageName = paletteImageNames[randomIndex];
 
 		int imageHeight, imageWidth;
-		getImageDims(paletteImageNames[i], &imageHeight, &imageWidth);
+		getImageDims(randomImageName, &imageHeight, &imageWidth);
 
 		double imageDimsRatio = (imageWidth * 1.0)/imageHeight;
 		int resizeWidth = imageWidth;
@@ -105,13 +106,14 @@ std::vector<Image*> createPalette(Image* targetImage,
 			resizeHeight = eachWidth / imageDimsRatio + 1; // the 0.5 is to prevent rounding errors
 		}
 
-		paletteImageNames[i] = resizeImage(paletteImageNames[i], resizeWidth, resizeHeight);
-		getImageDims(paletteImageNames[i], &imageHeight, &imageWidth);
-		// std::cout << i << ": " << paletteImageNames[i] << "(" << imageWidth << "x" << imageHeight << ")\n";
-		Image* tempImage = new Image(paletteImageNames[i]);
-		images[i] = tempImage->crop(eachHeight, eachWidth);
-		// std::cout << i << ": " << paletteImageNames[i] << "(" << images[i]->width << "x" << images[i]->height << ")\n";
+		randomImageName = resizeImage(randomImageName, resizeWidth, resizeHeight);
+		getImageDims(randomImageName, &imageHeight, &imageWidth);
+		// std::cout << i << ": " << randomImageName << "(" << imageWidth << "x" << imageHeight << ")\n";
+		Image* tempImage = new Image(randomImageName);
+		images.at(i) = tempImage->crop(eachHeight, eachWidth);
+		// std::cout << i << ": " << randomImageName << "(" << images[i]->width << "x" << images[i]->height << ")\n";
 	}
 
+	system(std::string("rm " + paletteImagesDirectory + "/*resize*").c_str());
 	return images;
 }
