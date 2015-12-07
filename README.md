@@ -8,6 +8,6 @@ Steps to get set up:
 4. Clone the repo: `git clone git@github.com:cjs-smith1993/ImageMosaic.git`
 5. Set up a couple directories: `cd ImageMosaic && mkdir bin output`
 6. Compile the project: `make`
-7. Run the project on the images, creating a 5x5 grid: `./bin/mosaic.o images_original/ 5 5`
+7. Run the project on the images, creating a 5x5 grid: `./bin/mosaic.o images_ppms/Fett5.ppm images_ppms/ 5 5`
 8. Open the mosaic: `open output/mosaic.ppm`
 9. Rejoice!
