@@ -18,4 +18,5 @@ clean:
 	@rm -f bin/*
 
 cleanresized:
-	@rm images_ppms/*resize*
+	@rm -f images_ppms/*resize*
+
