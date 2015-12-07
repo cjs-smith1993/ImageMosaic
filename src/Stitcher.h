@@ -5,6 +5,6 @@
 
 #include "Image.h"
 
-Image* stitch(std::vector<Image*> images, int, int);
+Image* stitch(Image*, std::vector<Image*> images, int, int);
 
 #endif

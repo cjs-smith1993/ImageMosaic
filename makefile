@@ -1,4 +1,4 @@
-.PHONY: all mosaic run clean
+.PHONY: all mosaic run clean cleanresized
 
 OS := $(shell uname)
 
@@ -8,7 +8,7 @@ else
 	g++ := g++
 endif
 
-all: mosaic
+all: clean cleanresized mosaic
 
 mosaic: bin/mosaic.o
 bin/mosaic.o: src/*.cpp
@@ -16,3 +16,6 @@ bin/mosaic.o: src/*.cpp
 
 clean:
 	@rm -f bin/*
+
+cleanresized:
+	@rm images_ppms/*resize*

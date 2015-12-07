@@ -3,7 +3,9 @@
 
 #include <array>
 #include <dirent.h>
+#include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -17,5 +19,7 @@ std::vector<std::string> getImagesFromDirectory(std::string);
 bool isImage(std::string);
 bool isPPM(std::string);
 std::string convertToPPM(std::string);
+std::string resizeImage(std::string, int, int);
+std::string getImageDims(std::string, int*, int*);
 
 #endif
