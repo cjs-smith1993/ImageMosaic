@@ -74,3 +74,27 @@ std::string convertToPPM(std::string fileName) {
 
 	return newFileName;
 }
+
+std::string resizeImage(std::string fileName, int target_width, int target_height) {
+	std::string newFileName(stripFileExtension(fileName) + "_resized." + getFileType(fileName));
+
+	std::string command("convert -resize " + std::to_string(target_width) + "x" + std::to_string(target_height) + " " + fileName + " -compress none " + newFileName);
+	system(command.c_str());
+
+	return newFileName;
+}
+
+std::string getImageDims(std::string fileName, int* height, int* width) {
+	if (!isPPM(fileName)) {
+		std::cout << "Converted " << fileName << " to a ppm\n";
+		fileName = convertToPPM(fileName);
+	}
+
+	std::ifstream file(fileName.c_str());
+	std::string line;
+	std::getline(file, line);
+	std::getline(file, line);
+	sscanf(line.c_str(), "%d %d", width, height);
+
+	return fileName;
+}
