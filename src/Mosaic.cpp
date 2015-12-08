@@ -48,7 +48,53 @@ Image* Mosaic::toImage() {
 	return mosaic;
 }
 
-Image* Mosaic::getBestFit(Image* target, int targetRow, int targetCol, int sectionHeight, int sectionWidth, std::vector<Image*> palette) {
-	int randomIndex = rand() % palette.size();
-	return palette[randomIndex];
+Pixel* getAveragePixel(Image* image, int startY, int endY, int startX,
+		int endX) {
+	Pixel* averagePixel = NULL;
+
+	long sumR = 0;
+	long sumG = 0;
+	long sumB = 0;
+	int numPixels = (endY - startY) * (endX - startX);
+
+	for (int i = startY; i < endY; i++) {
+		for (int j = startX; j < endX; j++) {
+			Pixel* curPixel = image->pixels[i][j];
+			sumR += curPixel->r;
+			sumG += curPixel->g;
+			sumB += curPixel->b;
+		}
+	}
+
+	long avgR = sumR / numPixels;
+	long avgG = sumG / numPixels;
+	long avgB = sumB / numPixels;
+	averagePixel = new Pixel(avgR, avgG, avgB);
+
+	return averagePixel;
+}
+
+Image* Mosaic::getBestFit(Image* target, int targetRow, int targetCol,
+		int sectionHeight, int sectionWidth, std::vector<Image*> palette) {
+	Image* bestImage = NULL;
+
+	Pixel* targetCellAverage = getAveragePixel(target,
+		targetRow, targetRow + sectionHeight,
+		targetCol, targetCol + sectionWidth);
+
+	double minDifference = 1E100;
+	for (int i = 0; i < palette.size(); i++) {
+		Image* sourceImage = palette.at(i);
+		Pixel* sourceCellAverage = getAveragePixel(sourceImage,
+			0, sourceImage->height,
+			0, sourceImage->width);
+
+		double curDifference = targetCellAverage->distance(sourceCellAverage);
+		if (curDifference < minDifference) {
+			minDifference = curDifference;
+			bestImage = sourceImage;
+		}
+	}
+
+	return bestImage;
 }
