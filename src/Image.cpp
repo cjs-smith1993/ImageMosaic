@@ -37,6 +37,19 @@ Image::Image(int height, int width) {
 	}
 }
 
+Image::Image(int height, int width, const Pixel* p) {
+	this->height = height;
+	this->width = width;
+
+	this->pixels = std::vector< std::vector<Pixel*> >();
+	for (int i = 0; i < this->height; i++) {
+		this->pixels.push_back(std::vector<Pixel*>());
+		for (int j = 0; j < this->width; j++) {
+			this->pixels[i].push_back(new Pixel(p));
+		}
+	}
+}
+
 Image::Image(const Image* that) {
 	this->height = that->height;
 	this->width = that->width;

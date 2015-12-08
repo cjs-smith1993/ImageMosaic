@@ -12,6 +12,9 @@
 #include <unistd.h>
 #include <vector>
 
+#include "Image.h"
+#include "Pixel.h"
+
 std::string getFileType(std::string);
 std::string stripFileExtension(std::string);
 std::string getBaseName(std::string);
@@ -21,5 +24,6 @@ bool isPPM(std::string);
 std::string convertToPPM(std::string);
 std::string resizeImage(std::string, int, int);
 std::string getImageDims(std::string, int*, int*);
+void generateColorPalette(int);
 
 #endif

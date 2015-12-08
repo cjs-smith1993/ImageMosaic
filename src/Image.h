@@ -21,6 +21,7 @@ public:
 	Image();
 	Image(std::string);
 	Image(int, int);
+	Image(int, int, const Pixel*);
 	Image(const Image*);
 	~Image();
 

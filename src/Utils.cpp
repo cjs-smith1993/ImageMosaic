@@ -98,3 +98,24 @@ std::string getImageDims(std::string fileName, int* height, int* width) {
 
 	return fileName;
 }
+
+void generateColorPalette(int granularity) {
+	system("mkdir images_colors");
+	system("rm -f images_colors/*");
+
+	int MAX_VAL = 256;
+	int step = MAX_VAL/granularity;
+	for (int r = 0; r <= MAX_VAL; r += step) {
+		for (int g = 0; g <= MAX_VAL; g += step) {
+			for (int b = 0; b <= MAX_VAL; b += step) {
+				Pixel* p = new Pixel(r, g, b);
+				Image* curImage = new Image(1000, 1000, p);
+				std::string rgb = std::to_string(r) + "_" +
+									std::to_string(g) + "_" +
+									std::to_string(b);
+				// std::cout << rgb << "\n";
+				curImage->writeToFile("images_colors/" + rgb);
+			}
+		}
+	}
+}
