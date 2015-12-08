@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string>
 
+#include "Mosaic.h"
 #include "Image.h"
 #include "Stitcher.h"
 #include "Utils.h"
@@ -28,40 +29,45 @@ int main(int argc, char* argv[]) {
 
 	std::string targetImage(argv[1]);
 	std::string srcImagesDir(argv[2]);
-	int nSourceRows = std::stoi(std::string(argv[3]));
-	int nSourceCols = std::stoi(std::string(argv[4]));
+	int numSrcRows = std::stoi(std::string(argv[3]));
+	int numSrcCols = std::stoi(std::string(argv[4]));
 	double getArgsTime = getCurrentTime();
 	std::cout << "Get arguments time (s): " << getArgsTime - startTime << "\n";
 
-	/* GET TARGET DIMENSIONS */
+	/* PREP TARGET */
 	int targetHeight;
 	int targetWidth;
 	targetImage = getImageDims(targetImage, &targetHeight, &targetWidth);
 	Image* target = new Image(targetImage);
 
 	// Make sure target dims are evenly divisible by source rows/columns
-	int newTargetHeight = target->height - (target->height % nSourceRows);
-	int newTargetWidth = target->width - (target->width % nSourceCols);
+	int newTargetHeight = target->height - (target->height % numSrcRows);
+	int newTargetWidth = target->width - (target->width % numSrcCols);
 	if (newTargetWidth != targetWidth || newTargetHeight != targetHeight) {
 		targetHeight = newTargetHeight;
 		targetWidth = newTargetWidth;
 		target = target->crop(targetHeight, targetWidth);
 	}
-	double getTargetDimsTime = getCurrentTime();
-	std::cout << "Get target dimensions time (s): " << getTargetDimsTime - getArgsTime << "\n";
+	double prepTargetTime = getCurrentTime();
+	std::cout << "Prep target time (s): " << prepTargetTime - getArgsTime << "\n";
 
 	/* CREATE PALETTE FROM SOURCE IMAGES */
-	std::vector<Image*> images = createPalette(target, srcImagesDir, nSourceRows, nSourceCols);
+	std::vector<Image*> palette = createPalette(target, srcImagesDir, numSrcRows, numSrcCols);
 	double createPaletteTime = getCurrentTime();
-	std::cout << "Create palette time (s): " << createPaletteTime - getTargetDimsTime << "\n";
+	std::cout << "Create palette time (s): " << createPaletteTime - prepTargetTime << "\n";
 
-	/* STITCH MOSAIC */
-	Image* mosaic = stitch(target, images, nSourceRows, nSourceCols);
+	/* CREATE MOSAIC */
+	Mosaic* mosaic = new Mosaic(target, palette, numSrcRows, numSrcCols);
+	double createMosaicTime = getCurrentTime();
+	std::cout << "Create mosaic time (s): " << createMosaicTime - createPaletteTime << "\n";
+
+	/* MOSAIC TO IMAGE */
+	Image* mosaicImg = mosaic->toImage();
 	double stitchTime = getCurrentTime();
-	std::cout << "Stitch mosaic time (s): " << stitchTime - createPaletteTime << "\n";
+	std::cout << "Stitch mosaic time (s): " << stitchTime - createMosaicTime << "\n";
 
 	/* WRITE TO FILE */
-	mosaic->writeToFile("output/mosaic.ppm");
+	mosaicImg->writeToFile("output/mosaic.ppm");
 	double writeTime = getCurrentTime();
 	std::cout << "Write time (s): " << writeTime-stitchTime << "\n";
 
@@ -69,30 +75,22 @@ int main(int argc, char* argv[]) {
 	std::cout << "Execution time (s): " << endTime-startTime << "\n";
 }
 
-std::string getNameForCell(Image* targetImage, std::vector<std::string> paletteImageNames, int curRow, int curCol, int cellHeight, int cellWidth) {
-	int randomIndex = rand() % paletteImageNames.size();
-	return paletteImageNames[randomIndex];
-}
-
 std::vector<Image*> createPalette(Image* targetImage,
-		std::string paletteImagesDirectory, int nSourceRows, int nSourceCols) {
+		std::string paletteImagesDirectory, int numSrcRows, int numSrcCols) {
 
 	/* GET PALETTE IMAGES FROM DIRECTORY */
 	std::vector<std::string> paletteImageNames = getImagesFromDirectory(paletteImagesDirectory);
 
-	int eachHeight = targetImage->height / nSourceRows;
-	int eachWidth = targetImage->width / nSourceCols;
+	int eachHeight = targetImage->height / numSrcRows;
+	int eachWidth = targetImage->width / numSrcCols;
 
-	int numSubCells = nSourceRows * nSourceCols;
-	std::vector<Image*> images(numSubCells, NULL);
+	std::vector<Image*> images(paletteImageNames.size(), NULL);
 	double targetDimsRatio = (eachWidth*1.0)/eachHeight;
 
 	#pragma omp parallel for
-	for (int i = 0; i < numSubCells; i++) {
-		int curRow = i / nSourceRows;
-		int curCol = i % nSourceCols;
-		std::string cellImageName = getNameForCell(targetImage,
-			paletteImageNames, curRow, curCol, eachHeight, eachWidth);
+	for (int i = 0; i < paletteImageNames.size(); i++) {
+
+		std::string cellImageName = paletteImageNames[i];
 
 		int imageHeight, imageWidth;
 		getImageDims(cellImageName, &imageHeight, &imageWidth);
@@ -103,13 +101,11 @@ std::vector<Image*> createPalette(Image* targetImage,
 
 		// if the height is the constraint
 		if (imageDimsRatio > targetDimsRatio) {
-			// std::cout << "height is the constraint" << std::endl;
 			resizeWidth = eachHeight * imageDimsRatio + 0.5;
 			resizeHeight = eachHeight;
 		}
 		// if the width is the constraint
 		else if (imageDimsRatio < targetDimsRatio) {
-			// std::cout << "width is the constraint" << std::endl;
 			resizeWidth = eachWidth;
 			resizeHeight = eachWidth / imageDimsRatio + 1; // the 1 is to prevent rounding errors
 		}
