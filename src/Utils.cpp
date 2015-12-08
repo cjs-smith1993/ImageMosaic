@@ -109,12 +109,12 @@ void generateColorPalette(int granularity) {
 		for (int g = 0; g <= MAX_VAL; g += step) {
 			for (int b = 0; b <= MAX_VAL; b += step) {
 				Pixel* p = new Pixel(r, g, b);
-				Image* curImage = new Image(1000, 1000, p);
+				Image* curImage = new Image(100, 100, p);
 				std::string rgb = std::to_string(r) + "_" +
 									std::to_string(g) + "_" +
 									std::to_string(b);
 				// std::cout << rgb << "\n";
-				curImage->writeToFile("images_colors/" + rgb);
+				curImage->writeToFile("images_colors/" + rgb + ".ppm");
 			}
 		}
 	}
