@@ -12,6 +12,7 @@
 #include "time.h"
 
 std::vector<Image*> createPalette(Image*, std::string, int, int);
+Image* resize(Image*, int, int);
 
 /*
 argv[0] -> program name 		("./bin/mosaic")
@@ -37,6 +38,7 @@ int main(int argc, char* argv[]) {
 	int targetWidth;
 	targetImage = getImageDims(targetImage, &targetHeight, &targetWidth);
 	Image* target = new Image(targetImage);
+
 	// Make sure target dims are evenly divisible by source rows/columns
 	int newTargetHeight = target->height - (target->height % nSourceRows);
 	int newTargetWidth = target->width - (target->width % nSourceCols);
@@ -85,7 +87,7 @@ std::vector<Image*> createPalette(Image* targetImage,
 	std::vector<Image*> images(numSubCells, NULL);
 	double targetDimsRatio = (eachWidth*1.0)/eachHeight;
 
-	// #pragma omp parallel for
+	#pragma omp parallel for
 	for (int i = 0; i < numSubCells; i++) {
 		int curRow = i / nSourceRows;
 		int curCol = i % nSourceCols;
@@ -109,17 +111,75 @@ std::vector<Image*> createPalette(Image* targetImage,
 		else if (imageDimsRatio < targetDimsRatio) {
 			// std::cout << "width is the constraint" << std::endl;
 			resizeWidth = eachWidth;
-			resizeHeight = eachWidth / imageDimsRatio + 1; // the 0.5 is to prevent rounding errors
+			resizeHeight = eachWidth / imageDimsRatio + 1; // the 1 is to prevent rounding errors
 		}
 
-		cellImageName = resizeImage(cellImageName, resizeWidth, resizeHeight);
-		getImageDims(cellImageName, &imageHeight, &imageWidth);
-		// std::cout << i << ": " << cellImageName << "(" << imageWidth << "x" << imageHeight << ")\n";
-		Image* tempImage = new Image(cellImageName);
+		Image* tempImage = resize(new Image(cellImageName), resizeHeight, resizeWidth);
 		images.at(i) = tempImage->crop(eachHeight, eachWidth);
-		// std::cout << i << ": " << cellImageName << "(" << images[i]->width << "x" << images[i]->height << ")\n";
 	}
 
-	system(std::string("rm " + paletteImagesDirectory + "/*resize*").c_str());
 	return images;
+}
+
+Image* resize(Image* srcImage, int newHeight, int newWidth) {
+	int srcHeight = srcImage->height;
+	int srcWidth = srcImage->width;
+	int srcColsPerNew = srcWidth / newWidth;
+	int srcRowsPerNew = srcHeight / newHeight;
+
+	Image* shrinkColumns = new Image(srcHeight, newWidth);
+
+	// shrink cols
+	#pragma omp parallel for
+	for (int i = 0; i < srcHeight; i++) {
+		int tempR = 0;
+		int tempG = 0;
+		int tempB = 0;
+
+		for (int j = 0; j < srcWidth; j++) {
+			Pixel* temp = srcImage->pixels[i][j];
+			tempR += temp->r;
+			tempG += temp->g;
+			tempB += temp->b;
+
+			if (j % srcColsPerNew == srcColsPerNew - 1 || j == srcWidth - 1) {
+				int newRow = i;
+				int newCol = j / srcColsPerNew;
+				if (newRow >= srcHeight || newCol >= newWidth) {
+					continue;
+				}
+				shrinkColumns->pixels[newRow][newCol] = new Pixel(tempR/srcColsPerNew, tempG/srcColsPerNew, tempB/srcColsPerNew);
+				tempR = tempG = tempB = 0;
+			}
+		}
+	}
+
+	Image* shrinkRows = new Image(newHeight, newWidth);
+
+	// shrink rows
+	#pragma omp parallel for
+	for (int j = 0; j < shrinkColumns->width; j++) {
+		int tempR = 0;
+		int tempG = 0;
+		int tempB = 0;
+
+		for (int i = 0; i < shrinkColumns->height; i++) {
+			Pixel* temp = shrinkColumns->pixels[i][j];
+			tempR += temp->r;
+			tempG += temp->g;
+			tempB += temp->b;
+
+			if (i % srcRowsPerNew == srcRowsPerNew - 1 || i == shrinkColumns->height - 1) {
+				int newRow = i / srcRowsPerNew;
+				int newCol = j;
+				if (newRow >= newHeight || newCol >= newWidth) {
+					continue;
+				}
+				shrinkRows->pixels[newRow][newCol] = new Pixel(tempR/srcRowsPerNew, tempG/srcRowsPerNew, tempB/srcRowsPerNew);
+				tempR = tempG = tempB = 0;
+			}
+		}
+	}
+
+	return shrinkRows;
 }
