@@ -59,10 +59,6 @@ Image::Image(const Image* that) {
 Image* Image::crop(int height, int width) {
 	Image* newImage = new Image(height, width);
 
-	// if (height > this->height || width > this->width) {
-	// 	std::cout << "(" << width << ", " << height << ") > (" << this->width << ", " << this->height << ")" << std::endl;
-	// }
-
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {
 			newImage->pixels[i][j] = new Pixel(this->pixels[i][j]);

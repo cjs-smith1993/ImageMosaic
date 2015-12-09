@@ -67,7 +67,10 @@ int main(int argc, char* argv[]) {
 	std::cout << "Stitch mosaic time (s): " << stitchTime - createMosaicTime << "\n";
 
 	/* WRITE TO FILE */
-	mosaicImg->writeToFile("output/mosaic.ppm");
+	std::string fileName = stripFileExtension(getBaseName(targetImage).substr(1));
+	std::string outputName = "output/" + fileName + "_" + std::to_string(numSrcCols) + "x" + std::to_string(numSrcRows) + ".ppm";
+	std::cout << "outputName: " << outputName << "\n";
+	mosaicImg->writeToFile(outputName);
 	double writeTime = getCurrentTime();
 	std::cout << "Write time (s): " << writeTime-stitchTime << "\n";
 
