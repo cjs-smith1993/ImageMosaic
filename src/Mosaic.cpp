@@ -28,7 +28,8 @@ Pixel* getAveragePixel(Image* image, int startY, int endY, int startX,
 
 Mosaic::Mosaic(Image* target, std::vector<Image*> palette, int numSrcRows,
 		int numSrcCols) {
-	this->images = std::vector<std::vector<Image*> >();
+	this->images = std::vector<std::vector<Image*> >(numSrcRows,
+		std::vector<Image*>(numSrcCols, NULL));
 	this->height = target->height;
 	this->width = target->width;
 	this->numSrcRows = numSrcRows;
@@ -46,14 +47,15 @@ Mosaic::Mosaic(Image* target, std::vector<Image*> palette, int numSrcRows,
 			0, sourceImage->width);
 	}
 
+	#pragma omp parallel for
 	for (int row = 0; row < numSrcRows; row++) {
-		this->images.push_back(std::vector<Image*>());
+		#pragma omp parallel for
 		for (int col = 0; col < numSrcCols; col++) {
 			int targetRow = row * sectionHeight;
 			int targetCol = col * sectionWidth;
 			int bestIndex = getBestFit(target, targetRow, targetCol,
 				sectionHeight, sectionWidth, paletteAverages);
-			this->images[row].push_back(palette.at(bestIndex));
+			this->images.at(row).at(col) = palette.at(bestIndex);
 		}
 	}
 }
