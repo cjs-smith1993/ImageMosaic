@@ -23,7 +23,7 @@ public:
 	Mosaic(Image*, std::vector<Image*>, int, int);
 	~Mosaic();
 
-	Image* getBestFit(Image*, int, int, int, int, std::vector<Image*>);
+	int getBestFit(Image*, int, int, int, int, std::vector<Pixel*>);
 	Image* toImage();
 };
 
